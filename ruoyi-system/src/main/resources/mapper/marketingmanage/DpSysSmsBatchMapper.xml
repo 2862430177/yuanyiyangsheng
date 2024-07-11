@@ -1,0 +1,86 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.hewei.marketingmanage.mapper.DpSysSmsBatchMapper">
+    
+    <resultMap type="com.hewei.marketingmanage.domain.DpSysSmsBatch" id="DpSysSmsBatchResult">
+        <result property="id"    column="id"    />
+        <result property="taskName"    column="task_name"    />
+        <result property="taskType"    column="task_type"    />
+        <result property="planExcuteDatetime"    column="plan_excute_datetime"    />
+        <result property="sendStatus"    column="send_status"    />
+        <result property="useTemplateId"    column="use_template_id"    />
+        <result property="useTemplateContent"    column="use_template_content"    />
+        <result property="filterConditions"    column="filter_conditions"    />
+    </resultMap>
+
+    <sql id="selectDpSysSmsBatchVo">
+        select id, task_name, task_type, plan_excute_datetime, send_status, use_template_id, use_template_content, filter_conditions from dp_sys_sms_batch
+    </sql>
+
+    <select id="selectDpSysSmsBatchList" parameterType="com.hewei.marketingmanage.domain.DpSysSmsBatch" resultMap="DpSysSmsBatchResult">
+        <include refid="selectDpSysSmsBatchVo"/>
+        <where>  
+            <if test="taskName != null  and taskName != ''"> and task_name like concat('%', #{taskName}, '%')</if>
+            <if test="taskType != null  and taskType != ''"> and task_type = #{taskType}</if>
+            <if test="planExcuteDatetime != null"> and plan_excute_datetime = #{planExcuteDatetime}</if>
+            <if test="sendStatus != null  and sendStatus != ''"> and send_status = #{sendStatus}</if>
+            <if test="useTemplateId != null "> and use_template_id = #{useTemplateId}</if>
+            <if test="useTemplateContent != null  and useTemplateContent != ''"> and use_template_content = #{useTemplateContent}</if>
+            <if test="filterConditions != null  and filterConditions != ''"> and filter_conditions = #{filterConditions}</if>
+        </where>
+    </select>
+    
+    <select id="selectDpSysSmsBatchById" parameterType="Long" resultMap="DpSysSmsBatchResult">
+        <include refid="selectDpSysSmsBatchVo"/>
+        where id = #{id}
+    </select>
+
+    <insert id="insertDpSysSmsBatch" parameterType="com.hewei.marketingmanage.domain.DpSysSmsBatch" useGeneratedKeys="true" keyProperty="id">
+        insert into dp_sys_sms_batch
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="taskName != null and taskName != ''">task_name,</if>
+            <if test="taskType != null and taskType != ''">task_type,</if>
+            <if test="planExcuteDatetime != null">plan_excute_datetime,</if>
+            <if test="sendStatus != null">send_status,</if>
+            <if test="useTemplateId != null">use_template_id,</if>
+            <if test="useTemplateContent != null">use_template_content,</if>
+            <if test="filterConditions != null">filter_conditions,</if>
+         </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="taskName != null and taskName != ''">#{taskName},</if>
+            <if test="taskType != null and taskType != ''">#{taskType},</if>
+            <if test="planExcuteDatetime != null">#{planExcuteDatetime},</if>
+            <if test="sendStatus != null">#{sendStatus},</if>
+            <if test="useTemplateId != null">#{useTemplateId},</if>
+            <if test="useTemplateContent != null">#{useTemplateContent},</if>
+            <if test="filterConditions != null">#{filterConditions},</if>
+         </trim>
+    </insert>
+
+    <update id="updateDpSysSmsBatch" parameterType="com.hewei.marketingmanage.domain.DpSysSmsBatch">
+        update dp_sys_sms_batch
+        <trim prefix="SET" suffixOverrides=",">
+            <if test="taskName != null and taskName != ''">task_name = #{taskName},</if>
+            <if test="taskType != null and taskType != ''">task_type = #{taskType},</if>
+            <if test="planExcuteDatetime != null">plan_excute_datetime = #{planExcuteDatetime},</if>
+            <if test="sendStatus != null">send_status = #{sendStatus},</if>
+            <if test="useTemplateId != null">use_template_id = #{useTemplateId},</if>
+            <if test="useTemplateContent != null">use_template_content = #{useTemplateContent},</if>
+            <if test="filterConditions != null">filter_conditions = #{filterConditions},</if>
+        </trim>
+        where id = #{id}
+    </update>
+
+    <delete id="deleteDpSysSmsBatchById" parameterType="Long">
+        delete from dp_sys_sms_batch where id = #{id}
+    </delete>
+
+    <delete id="deleteDpSysSmsBatchByIds" parameterType="String">
+        delete from dp_sys_sms_batch where id in 
+        <foreach item="id" collection="array" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+    </delete>
+</mapper>

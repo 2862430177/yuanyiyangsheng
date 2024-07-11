@@ -1,14 +1,18 @@
 package com.ruoyi;
 
+import org.mybatis.spring.annotation.MapperScan;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration;
+import org.springframework.context.annotation.ComponentScan;
 
 /**
  * 启动程序
  * 
  * @author ruoyi
  */
+@ComponentScan(basePackages = {"com.ruoyi","com.hewei"})
+@MapperScan(basePackages = {"com.ruoyi.**.mapper","com.hewei.**.mapper"})
 @SpringBootApplication(exclude = { DataSourceAutoConfiguration.class })
 public class RuoYiApplication
 {

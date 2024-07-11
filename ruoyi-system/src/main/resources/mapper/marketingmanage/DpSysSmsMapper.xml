@@ -1,0 +1,116 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.hewei.marketingmanage.mapper.DpSysSmsMapper">
+    
+    <resultMap type="com.hewei.marketingmanage.domain.DpSysSms" id="DpSysSmsResult">
+        <result property="id"    column="id"    />
+        <result property="esTitle"    column="es_title"    />
+        <result property="esType"    column="es_type"    />
+        <result property="esReceiver"    column="es_receiver"    />
+        <result property="esParam"    column="es_param"    />
+        <result property="esContent"    column="es_content"    />
+        <result property="esSendTime"    column="es_send_time"    />
+        <result property="esSendStatus"    column="es_send_status"    />
+        <result property="esSendNum"    column="es_send_num"    />
+        <result property="esResult"    column="es_result"    />
+        <result property="remark"    column="remark"    />
+        <result property="createBy"    column="create_by"    />
+        <result property="createTime"    column="create_time"    />
+        <result property="updateBy"    column="update_by"    />
+        <result property="updateTime"    column="update_time"    />
+    </resultMap>
+
+    <sql id="selectDpSysSmsVo">
+        select id, es_title, es_type, es_receiver, es_param, es_content, es_send_time, es_send_status, es_send_num, es_result, remark, create_by, create_time, update_by, update_time from dp_sys_sms
+    </sql>
+
+    <select id="selectDpSysSmsList" parameterType="com.hewei.marketingmanage.domain.DpSysSms" resultMap="DpSysSmsResult">
+        <include refid="selectDpSysSmsVo"/>
+        <where>  
+            <if test="esTitle != null  and esTitle != ''"> and es_title = #{esTitle}</if>
+            <if test="esType != null  and esType != ''"> and es_type = #{esType}</if>
+            <if test="esReceiver != null  and esReceiver != ''"> and es_receiver = #{esReceiver}</if>
+            <if test="esParam != null  and esParam != ''"> and es_param = #{esParam}</if>
+            <if test="esContent != null  and esContent != ''"> and es_content = #{esContent}</if>
+            <if test="esSendTime != null "> and es_send_time = #{esSendTime}</if>
+            <if test="esSendStatus != null  and esSendStatus != ''"> and es_send_status = #{esSendStatus}</if>
+            <if test="esSendNum != null "> and es_send_num = #{esSendNum}</if>
+            <if test="esResult != null  and esResult != ''"> and es_result = #{esResult}</if>
+        </where>
+    </select>
+    
+    <select id="selectDpSysSmsById" parameterType="Long" resultMap="DpSysSmsResult">
+        <include refid="selectDpSysSmsVo"/>
+        where id = #{id}
+    </select>
+
+    <insert id="insertDpSysSms" parameterType="com.hewei.marketingmanage.domain.DpSysSms" useGeneratedKeys="true" keyProperty="id">
+        insert into dp_sys_sms
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="esTitle != null">es_title,</if>
+            <if test="esType != null">es_type,</if>
+            <if test="esReceiver != null">es_receiver,</if>
+            <if test="esParam != null">es_param,</if>
+            <if test="esContent != null">es_content,</if>
+            <if test="esSendTime != null">es_send_time,</if>
+            <if test="esSendStatus != null">es_send_status,</if>
+            <if test="esSendNum != null">es_send_num,</if>
+            <if test="esResult != null">es_result,</if>
+            <if test="remark != null">remark,</if>
+            <if test="createBy != null">create_by,</if>
+            <if test="createTime != null">create_time,</if>
+            <if test="updateBy != null">update_by,</if>
+            <if test="updateTime != null">update_time,</if>
+         </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="esTitle != null">#{esTitle},</if>
+            <if test="esType != null">#{esType},</if>
+            <if test="esReceiver != null">#{esReceiver},</if>
+            <if test="esParam != null">#{esParam},</if>
+            <if test="esContent != null">#{esContent},</if>
+            <if test="esSendTime != null">#{esSendTime},</if>
+            <if test="esSendStatus != null">#{esSendStatus},</if>
+            <if test="esSendNum != null">#{esSendNum},</if>
+            <if test="esResult != null">#{esResult},</if>
+            <if test="remark != null">#{remark},</if>
+            <if test="createBy != null">#{createBy},</if>
+            <if test="createTime != null">#{createTime},</if>
+            <if test="updateBy != null">#{updateBy},</if>
+            <if test="updateTime != null">#{updateTime},</if>
+         </trim>
+    </insert>
+
+    <update id="updateDpSysSms" parameterType="com.hewei.marketingmanage.domain.DpSysSms">
+        update dp_sys_sms
+        <trim prefix="SET" suffixOverrides=",">
+            <if test="esTitle != null">es_title = #{esTitle},</if>
+            <if test="esType != null">es_type = #{esType},</if>
+            <if test="esReceiver != null">es_receiver = #{esReceiver},</if>
+            <if test="esParam != null">es_param = #{esParam},</if>
+            <if test="esContent != null">es_content = #{esContent},</if>
+            <if test="esSendTime != null">es_send_time = #{esSendTime},</if>
+            <if test="esSendStatus != null">es_send_status = #{esSendStatus},</if>
+            <if test="esSendNum != null">es_send_num = #{esSendNum},</if>
+            <if test="esResult != null">es_result = #{esResult},</if>
+            <if test="remark != null">remark = #{remark},</if>
+            <if test="createBy != null">create_by = #{createBy},</if>
+            <if test="createTime != null">create_time = #{createTime},</if>
+            <if test="updateBy != null">update_by = #{updateBy},</if>
+            <if test="updateTime != null">update_time = #{updateTime},</if>
+        </trim>
+        where id = #{id}
+    </update>
+
+    <delete id="deleteDpSysSmsById" parameterType="Long">
+        delete from dp_sys_sms where id = #{id}
+    </delete>
+
+    <delete id="deleteDpSysSmsByIds" parameterType="String">
+        delete from dp_sys_sms where id in 
+        <foreach item="id" collection="array" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+    </delete>
+</mapper>

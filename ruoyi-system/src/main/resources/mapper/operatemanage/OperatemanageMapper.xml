@@ -1,0 +1,163 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.hewei.operatemanage.mapper.OperatemanageMapper">
+
+    <!--获取营业额统计信息-->
+    <select id="selectTurnoverStatisticsList"
+            resultType="com.hewei.operatemanage.vo.TurnoverStatisticsForDateResultVo"
+            parameterType="com.hewei.operatemanage.vo.TurnoverStatisticsQueryVo">
+        select DATE(bsf.create_time)  as createTime ,SUM(bsf.service_charge) as serviceCharge
+        from b_service_flow bsf
+        where bsf.create_time <![CDATA[>=]]> #{startTime,jdbcType=DATE}
+        and bsf.create_time <![CDATA[<=]]> #{endTime,jdbcType=DATE}
+        group by DATE(bsf.create_time)
+        order by DATE(bsf.create_time) asc;
+    </select>
+    <!-- 获取项目金额（店铺维度） -->
+    <select id="selectTurnoverStatisticsByItemList"
+            resultType="com.hewei.operatemanage.vo.TurnoverStatisticsForDateResultVo">
+        select date(bsf.create_time) as createTime,
+        sum(bsfd.detail_num*bsfd.detail_unit_price) as itemAmount
+        from b_service_flow_detail bsfd
+        inner join b_service_flow bsf on bsfd.flow_id = bsf.id
+        where
+        bsfd.detail_type = '0'
+        and bsf.create_time <![CDATA[>=]]> #{startTime,jdbcType=DATE}
+        and bsf.create_time <![CDATA[<=]]> #{endTime,jdbcType=DATE}
+        group by date(bsf.create_time) ;
+    </select>
+    <!-- 获取产品金额（店铺维度） -->
+    <select id="selectTurnoverStatisticsByProductList"
+            resultType="com.hewei.operatemanage.vo.TurnoverStatisticsForDateResultVo">
+        select date(bsf.create_time) as createTime,
+        sum(bsfd.detail_num*bsfd.detail_unit_price) as productAmount
+        from b_service_flow_detail bsfd
+        inner join b_service_flow bsf on bsfd.flow_id = bsf.id
+        where
+        bsfd.detail_type = '1'
+        and bsf.create_time <![CDATA[>=]]> #{startTime,jdbcType=DATE}
+        and bsf.create_time <![CDATA[<=]]> #{endTime,jdbcType=DATE}
+        group by date(bsf.create_time) ;
+    </select>
+
+    <!--获取实际消费金额-->
+    <select id="selectActualServicecharge" resultType="com.hewei.operatemanage.vo.EmployeePerformanceindicatorResultVo">
+        select bsf.employee_id as employeeId,DATE(bsf.create_time)  as createTime,sum(bsf.service_charge) as actualServiceCharge
+        from b_service_flow bsf
+        <where>
+            bsf.create_time <![CDATA[>=]]> #{startTime,jdbcType=DATE}
+            and bsf.create_time <![CDATA[<=]]> #{endTime,jdbcType=DATE}
+            <if test="employeeId != null">
+                and bsf.employee_id = #{employeeId}
+            </if>
+        </where>
+        group by bsf.employee_id,DATE(bsf.create_time);
+    </select>
+    <!-- 获取项目金额、产品金额（店铺维度）-->
+    <select id="selectItemProductAmountByStore" resultType="java.util.Map">
+        select bsfd.detail_type as detailType,date(bsf.create_time) as createTime,
+        sum(case when bsfd.detail_type = '0' then bsfd.detail_num*bsfd.detail_unit_price else 0 end) as itemTotalAmount,
+        sum(case when bsfd.detail_type = '1' then bsfd.detail_num*bsfd.detail_unit_price else 0 end) as productsTotalAmount
+        from b_service_flow_detail bsfd
+        inner join b_service_flow bsf on bsfd.flow_id = bsf.id
+        <where>
+            bsf.create_time <![CDATA[>=]]> #{startTime,jdbcType=DATE}
+            and bsf.create_time <![CDATA[<=]]> #{endTime,jdbcType=DATE}
+        </where>
+        group by bsf.employee_id ,bsfd.detail_type,date(bsf.create_time) ;
+    </select>
+    <!-- 获取项目金额、产品金额（员工维度）-->
+    <!-- 获取服务分类(项目|产品)，服务id(项目id|产品id)，项目金额，产品金额，项目数量、产品数量 -->
+    <select id="selectItemProductAmount" resultType="java.util.Map">
+        select bsf.employee_id as employeeId,bsfd.detail_type as detailType,bsfd.detail_pk_id as detailPkId,bsf.create_time as createTime,
+        sum(case when bsfd.detail_type = '0' then bsfd.detail_num*bsfd.detail_unit_price else 0 end) as itemTotalAmount,
+        sum(case when bsfd.detail_type = '1' then bsfd.detail_num*bsfd.detail_unit_price else 0 end) as productsTotalAmount,
+        sum(case when bsfd.detail_type = '0' then bsfd.detail_num else 0 end) as itemTotalNum,
+        sum(case when bsfd.detail_type = '1' then bsfd.detail_num else 0 end) as productsTotalNum
+        from b_service_flow_detail bsfd
+        inner join b_service_flow bsf on bsfd.flow_id = bsf.id
+        <where>
+            bsf.create_time <![CDATA[>=]]> #{startTime,jdbcType=DATE}
+            and bsf.create_time <![CDATA[<=]]> #{endTime,jdbcType=DATE}
+            <if test="employeeId != null">
+                and bsf.employee_id = #{employeeId}
+            </if>
+        </where>
+        group by bsf.employee_id ,bsfd.detail_type,bsfd.detail_pk_id ,bsf.create_time ;
+    </select>
+    <!--获取充值日志-->
+    <select id="selectRechargeLog" resultType="java.util.Map">
+        select oper_param as operParam,json_result as jsonResult,sol.oper_time as operTime
+        from sys_oper_log sol
+        where sol.business_type  = '2'
+        and sol.request_method = 'POST'
+        and sol.oper_url='/member/membercard/recharge'
+        and sol.oper_time <![CDATA[>=]]> #{startTime,jdbcType=DATE}
+        and sol.oper_time <![CDATA[<=]]> #{endTime,jdbcType=DATE}
+    </select>
+    <!--获取会员办卡金额(首次)-->
+    <select id="selectMemberCardFirstAmnout" resultType="java.util.Map">
+        select bmc.recommend_employee_id as recommendEmployeeId,DATE(bmc.create_time) as createTime,
+        sum(bmc.init_amount)  as initAmount
+        from b_member_card bmc
+        <where>
+            bmc.create_time <![CDATA[>=]]> #{startTime,jdbcType=DATE}
+            and bmc.create_time <![CDATA[<=]]> #{endTime,jdbcType=DATE}
+            <if test="employeeId != null">
+                and bmc.recommend_employee_id = #{employeeId}
+            </if>
+            <if test="employeeId == null">
+                and bmc.recommend_employee_id is not null
+            </if>
+        </where>
+        group by bmc.recommend_employee_id,DATE(bmc.create_time)
+    </select>
+    <!-- 项目维度统计(日期，项目总消费金额) -->
+    <select id="selectItemsDimensionalStatisticsListByDate" resultType="java.util.Map">
+        select date(bsf.create_time) as createTime,
+        sum(bsfd.detail_num*bsfd.detail_unit_price) as itemTotalAmount
+        from b_service_flow_detail bsfd
+        inner join b_service_flow bsf on bsfd.flow_id = bsf.id
+        where bsf.create_time <![CDATA[>=]]> #{startTime,jdbcType=DATE}
+        and bsf.create_time <![CDATA[<=]]> #{endTime,jdbcType=DATE}
+        and bsfd.detail_type = '0'
+        group by bsfd.detail_type,date(bsf.create_time) ;
+    </select>
+    <!-- 产品维度统计(日期，产品总消费金额) -->
+    <select id="selectProductsDimensionalStatisticsListByDate" resultType="java.util.Map">
+        select date(bsf.create_time) as createTime,
+            sum(bsfd.detail_num*bsfd.detail_unit_price) as productTotalAmount
+        from b_service_flow_detail bsfd
+            inner join b_service_flow bsf on bsfd.flow_id = bsf.id
+        where bsf.create_time <![CDATA[>=]]> #{startTime,jdbcType=DATE}
+          and bsf.create_time <![CDATA[<=]]> #{endTime,jdbcType=DATE}
+          and bsfd.detail_type = '1'
+        group by bsfd.detail_type,date(bsf.create_time) ;
+    </select>
+    <!-- 项目维度统计(项目种类，项目总消费金额) -->
+    <select id="selectItemsDimensionalStatisticsList" resultType="java.util.Map">
+        select bsfd.detail_name  as itemName,
+            sum(bsfd.detail_num*bsfd.detail_unit_price) as itemTotalAmount
+        from b_service_flow_detail bsfd
+            inner join b_service_flow bsf on bsfd.flow_id = bsf.id
+        where bsf.create_time <![CDATA[>=]]> #{startTime,jdbcType=DATE}
+          and bsf.create_time <![CDATA[<=]]> #{endTime,jdbcType=DATE}
+          and bsfd.detail_type = '0'
+        group by bsfd.detail_type,bsfd.detail_name
+        order by itemTotalAmount desc;
+    </select>
+    <!-- 产品维度统计(产品种类，产品总消费金额) -->
+    <select id="selectProductsDimensionalStatisticsList" resultType="java.util.Map">
+        select bsfd.detail_name  as productName,
+            sum(bsfd.detail_num*bsfd.detail_unit_price) as productTotalAmount
+        from b_service_flow_detail bsfd
+            inner join b_service_flow bsf on bsfd.flow_id = bsf.id
+        where bsf.create_time <![CDATA[>=]]> #{startTime,jdbcType=DATE}
+          and bsf.create_time <![CDATA[<=]]> #{endTime,jdbcType=DATE}
+          and bsfd.detail_type = '1'
+        group by bsfd.detail_type,bsfd.detail_name
+        order by productTotalAmount desc;
+    </select>
+</mapper>

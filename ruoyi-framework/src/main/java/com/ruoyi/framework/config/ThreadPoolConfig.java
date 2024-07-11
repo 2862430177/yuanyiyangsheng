@@ -4,18 +4,23 @@ import com.ruoyi.common.utils.Threads;
 import org.apache.commons.lang3.concurrent.BasicThreadFactory;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.scheduling.annotation.AsyncConfigurer;
+import org.springframework.scheduling.annotation.EnableAsync;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
+
+import java.util.concurrent.Executor;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.ThreadPoolExecutor;
 
 /**
  * 线程池配置
- *
+ * 实现AsyncConfigurer接口可以让注解@Async也使用我们统一管理的线程池，方便管理
  * @author ruoyi
  **/
 @Configuration
-public class ThreadPoolConfig
+@EnableAsync
+public class ThreadPoolConfig implements AsyncConfigurer
 {
     // 核心线程池大小
     private int corePoolSize = 50;
@@ -29,6 +34,11 @@ public class ThreadPoolConfig
     // 线程池维护线程所允许的空闲时间
     private int keepAliveSeconds = 300;
 
+    @Override
+    public Executor getAsyncExecutor() {
+        return threadPoolTaskExecutor();
+    }
+
     @Bean(name = "threadPoolTaskExecutor")
     public ThreadPoolTaskExecutor threadPoolTaskExecutor()
     {
@@ -37,8 +47,14 @@ public class ThreadPoolConfig
         executor.setCorePoolSize(corePoolSize);
         executor.setQueueCapacity(queueCapacity);
         executor.setKeepAliveSeconds(keepAliveSeconds);
+        // 设置优雅停机
+        executor.setWaitForTasksToCompleteOnShutdown(true);
+        executor.setThreadNamePrefix("yuanyiyangsheng-executor-");
+        // 自定义的ThreadFactory，设置了UncaughtExceptionHandler,将异常日志打印出来，方便排查错误
+        executor.setThreadFactory(new MyThreadFactory(executor));
         // 线程池对拒绝任务(无线程可用)的处理策略
         executor.setRejectedExecutionHandler(new ThreadPoolExecutor.CallerRunsPolicy());
+        executor.initialize();
         return executor;
     }
 

@@ -171,6 +171,29 @@ public class DateUtils extends org.apache.commons.lang3.time.DateUtils
     }
 
     /**
+     * 计算时间差
+     *
+     * @param endDate 最后时间
+     * @param startTime 开始时间
+     * @return 时间差（分钟）
+     */
+    public static Long timeDistanceMinute(Date endDate, Date startTime)
+    {
+        if(endDate ==null ||startTime ==null){
+            return 0l;
+        }
+        long nd = 1000 * 24 * 60 * 60;
+        long nh = 1000 * 60 * 60;
+        long nm = 1000 * 60;
+        // long ns = 1000;
+        // 获得两个时间的毫秒时间差异
+        long diff = endDate.getTime() - startTime.getTime();
+        // 计算差多少分钟
+        long min = diff % nd % nh / nm;
+        return min;
+    }
+
+    /**
      * 增加 LocalDateTime ==> Date
      */
     public static Date toDate(LocalDateTime temporalAccessor)

@@ -2,6 +2,8 @@ package com.ruoyi.system.mapper;
 
 import java.util.List;
 import com.ruoyi.system.domain.SysConfig;
+import org.apache.ibatis.annotations.Param;
+import org.springframework.security.core.parameters.P;
 
 /**
  * 参数配置 数据层
@@ -25,7 +27,7 @@ public interface SysConfigMapper
      * @return 参数配置信息
      */
     public SysConfig selectConfigById(Long configId);
-
+    SysConfig selectConfigByKey(@Param("configKey") String configKey);
     /**
      * 查询参数配置列表
      * 

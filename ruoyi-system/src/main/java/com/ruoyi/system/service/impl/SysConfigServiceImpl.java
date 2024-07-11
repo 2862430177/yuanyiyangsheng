@@ -149,6 +149,33 @@ public class SysConfigServiceImpl implements ISysConfigService
     }
 
     /**
+     * 修改参数配置
+     *
+     * @param config 参数配置信息
+     * @return 结果
+     */
+    @Override
+    public int updateConfigByKey(SysConfig config)
+    {
+        Long configId = config.getConfigId();
+        if(configId != null){
+            return this.updateConfig(config);
+        }
+        SysConfig temp = configMapper.selectConfigByKey(config.getConfigKey());
+        if (!StringUtils.equals(temp.getConfigValue(), config.getConfigValue()))
+        {
+            redisCache.deleteObject(getCacheKey(temp.getConfigKey()));
+        }
+        temp.setConfigValue(config.getConfigValue());
+        int row = configMapper.updateConfig(temp);
+        if (row > 0)
+        {
+            redisCache.setCacheObject(getCacheKey(config.getConfigKey()), config.getConfigValue());
+        }
+        return row;
+    }
+
+    /**
      * 批量删除参数信息
      * 
      * @param configIds 需要删除的参数ID

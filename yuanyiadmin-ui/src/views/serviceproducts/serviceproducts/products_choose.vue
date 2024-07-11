@@ -1,0 +1,222 @@
+<template>
+  <div class="app-container">
+    <el-dialog title="选择产品" :visible.sync="productsChooseOpen" width="50%" append-to-body>
+    <el-form :model="queryParams" ref="queryForm" size="small" :inline="true" v-show="showSearch" label-width="100px">
+      <el-form-item label="产品名称" prop="productName">
+        <el-input
+          v-model="queryParams.productName"
+          placeholder="请输入产品名称"
+          clearable
+          @keyup.enter.native="handleQuery"
+        />
+      </el-form-item>
+      <el-form-item label="产品状态" prop="status">
+        <el-select v-model="queryParams.status" placeholder="请选择产品状态" clearable>
+          <el-option
+            v-for="dict in dict.type.product_status"
+            :key="dict.value"
+            :label="dict.label"
+            :value="dict.value"
+          />
+        </el-select>
+      </el-form-item>
+      <el-form-item>
+        <el-button type="primary" icon="el-icon-search" size="mini" @click="handleQuery">搜索</el-button>
+        <el-button icon="el-icon-refresh" size="mini" @click="resetQuery">重置</el-button>
+      </el-form-item>
+    </el-form>
+
+    <el-table v-loading="loading" :data="serviceproductsList" @selection-change="handleSelectionChange">
+      <el-table-column type="selection" width="55" align="center" />
+      <el-table-column label="服务产品id" align="center" prop="id" />
+      <el-table-column label="产品名称" align="center" prop="productName" />
+      <el-table-column label="产品收费标准(元)" align="center" prop="productChargeStandard" />
+      <el-table-column label="产品描述" align="center" prop="productDesc" :show-overflow-tooltip="true"/>
+      <el-table-column label="产品状态" align="center" prop="status">
+        <template slot-scope="scope">
+          <dict-tag :options="dict.type.product_status" :value="scope.row.status"/>
+        </template>
+      </el-table-column>
+      <el-table-column label="备注" align="center" prop="remark" :show-overflow-tooltip="true"/>
+    </el-table>
+    
+    <pagination
+      v-show="total>0"
+      :total="total"
+      :page.sync="queryParams.pageNum"
+      :limit.sync="queryParams.pageSize"
+      @pagination="getList"
+    />
+    <div slot="footer" class="dialog-footer">
+        <el-button type="primary" @click="confirmChoose">确 定</el-button>
+        <el-button @click="cancel">取 消</el-button>
+      </div>
+  </el-dialog>
+  </div>
+</template>
+
+<script>
+import { listServiceproducts, getServiceproducts, delServiceproducts, addServiceproducts, updateServiceproducts } from "@/api/serviceproducts/serviceproducts";
+
+export default {
+  name: "ServiceproductsChoose",
+  dicts: ['product_status'],
+  data() {
+    return {
+      // 遮罩层
+      loading: true,
+      // 选中数组
+      ids: [],
+      // 非单个禁用
+      single: true,
+      // 非多个禁用
+      multiple: true,
+      // 显示搜索条件
+      showSearch: true,
+      // 总条数
+      total: 0,
+      // 服务产品管理表格数据
+      serviceproductsList: [],
+      // 弹出层标题
+      title: "",
+      // 是否显示弹出层
+      open: false,
+      //是否显示产品选择弹出层
+      productsChooseOpen:false,
+      // 查询参数
+      queryParams: {
+        pageNum: 1,
+        pageSize: 10,
+        productName: null,
+        productChargeStandard: null,
+        productDesc: null,
+        status: null,
+      },
+      // 表单参数
+      form: {},
+      // 表单校验
+      rules: {
+        productName: [
+          { required: true, message: "产品名称不能为空", trigger: "blur" }
+        ],
+      },
+      multipleSelection: []
+    };
+  },
+  created() {
+    // this.getList();
+  },
+  methods: {
+    //外部调用显示
+    show(){
+      this.productsChooseOpen = true
+      this.getList()
+    },
+    /** 查询服务产品管理列表 */
+    getList() {
+      this.loading = true;
+      listServiceproducts(this.queryParams).then(response => {
+        this.serviceproductsList = response.rows;
+        this.total = response.total;
+        this.loading = false;
+      });
+    },
+    // 取消按钮
+    cancel() {
+      this.productsChooseOpen = false;
+      this.reset();
+    },
+    // 表单重置
+    reset() {
+      this.form = {
+        id: null,
+        productName: null,
+        productChargeStandard: null,
+        productDesc: null,
+        status: null,
+        delFlag: null,
+        createBy: null,
+        createTime: null,
+        updateBy: null,
+        updateTime: null,
+        remark: null
+      };
+      this.resetForm("form");
+    },
+    /** 搜索按钮操作 */
+    handleQuery() {
+      this.queryParams.pageNum = 1;
+      this.getList();
+    },
+    /** 重置按钮操作 */
+    resetQuery() {
+      this.resetForm("queryForm");
+      this.handleQuery();
+    },
+    // 多选框选中数据
+    handleSelectionChange(selection) {
+      this.multipleSelection = selection
+      this.ids = selection.map(item => item.id)
+      this.single = selection.length!==1
+      this.multiple = !selection.length
+    },
+    /** 确认选择 */
+    confirmChoose(){
+      this.$emit('chooseOk', this.multipleSelection)
+      this.productsChooseOpen = false
+    },
+    /** 新增按钮操作 */
+    handleAdd() {
+      this.reset();
+      this.open = true;
+      this.title = "添加服务产品管理";
+    },
+    /** 修改按钮操作 */
+    handleUpdate(row) {
+      this.reset();
+      const id = row.id || this.ids
+      getServiceproducts(id).then(response => {
+        this.form = response.data;
+        this.open = true;
+        this.title = "修改服务产品管理";
+      });
+    },
+    /** 提交按钮 */
+    submitForm() {
+      this.$refs["form"].validate(valid => {
+        if (valid) {
+          if (this.form.id != null) {
+            updateServiceproducts(this.form).then(response => {
+              this.$modal.msgSuccess("修改成功");
+              this.open = false;
+              this.getList();
+            });
+          } else {
+            addServiceproducts(this.form).then(response => {
+              this.$modal.msgSuccess("新增成功");
+              this.open = false;
+              this.getList();
+            });
+          }
+        }
+      });
+    },
+    /** 删除按钮操作 */
+    handleDelete(row) {
+      const ids = row.id || this.ids;
+      this.$modal.confirm('是否确认删除服务产品管理编号为"' + ids + '"的数据项？').then(function() {
+        return delServiceproducts(ids);
+      }).then(() => {
+        this.getList();
+        this.$modal.msgSuccess("删除成功");
+      }).catch(() => {});
+    },
+    /** 导出按钮操作 */
+    handleExport() {
+      this.download('serviceproducts/serviceproducts/export', {
+        ...this.queryParams
+      }, `serviceproducts_${new Date().getTime()}.xlsx`)
+    }
+  }
+};
+</script>

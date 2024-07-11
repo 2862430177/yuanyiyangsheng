@@ -1,0 +1,132 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.hewei.member.mapper.BCustomerMapper">
+    
+    <resultMap type="com.hewei.member.domain.BCustomer" id="BCustomerResult">
+        <result property="id"    column="id"    />
+        <result property="customerName"    column="customer_name"    />
+        <result property="nickName"    column="nick_name"    />
+        <result property="phonenumber"    column="phonenumber"    />
+        <result property="sex"    column="sex"    />
+        <result property="status"    column="status"    />
+        <result property="delFlag"    column="del_flag"    />
+        <result property="lastUseDate"    column="last_use_date"    />
+        <result property="createBy"    column="create_by"    />
+        <result property="createTime"    column="create_time"    />
+        <result property="updateBy"    column="update_by"    />
+        <result property="updateTime"    column="update_time"    />
+        <result property="remark"    column="remark"    />
+    </resultMap>
+
+    <sql id="selectBCustomerVo">
+        select id, customer_name, nick_name, phonenumber, sex, status, del_flag, last_use_date, create_by, create_time, update_by, update_time, remark from b_customer
+    </sql>
+
+    <select id="selectBCustomerList" parameterType="com.hewei.member.domain.BCustomer" resultMap="BCustomerResult">
+        <include refid="selectBCustomerVo"/>
+        <where>  
+            <if test="customerName != null  and customerName != ''"> and customer_name like concat('%', #{customerName}, '%')</if>
+            <if test="nickName != null  and nickName != ''"> and nick_name like concat('%', #{nickName}, '%')</if>
+            <if test="phonenumber != null  and phonenumber != ''"> and phonenumber like concat('%', #{phonenumber}, '%')</if>
+            <if test="sex != null  and sex != ''"> and sex = #{sex}</if>
+            <if test="status != null  and status != ''"> and status = #{status}</if>
+            <if test="lastUseDate != null "> and last_use_date = #{lastUseDate}</if>
+        </where>
+    </select>
+    
+    <select id="selectBCustomerById" parameterType="Long" resultMap="BCustomerResult">
+        <include refid="selectBCustomerVo"/>
+        where id = #{id}
+    </select>
+    <select id="selectBCustomerByIds" resultMap="BCustomerResult">
+        <include refid="selectBCustomerVo"/>
+        where id in
+        <foreach item="id" collection="customerIds" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+    </select>
+    <!-- 根据性别，会员卡余额，最后消费时间间隔查询 -->
+    <select id="selectForMarketing" resultType="com.hewei.member.vo.BCustomerResultVo">
+        select bc.phonenumber ,bc.sex ,bc.last_use_date as lastUseDate,bmc.remaining_amount as remainingAmount
+        from b_customer bc
+        left join b_member_card bmc on bc.id  = bmc.customer_id
+        <where>
+            <if test="phonenumber != null and phonenumber != ''">
+                and bc.phonenumber like concat('%', #{phonenumber}, '%')
+            </if>
+            <if test="sex != null">
+                and bc.sex  ${fieldCompareMap.sex} #{sex}
+            </if>
+            <if test="remainAmount != null">
+                and bmc.remaining_amount ${fieldCompareMap.remainAmount} #{remainAmount}
+            </if>
+            <if test="lastCostDateTime != null">
+                and bc.last_use_date ${fieldCompareMap.lastCostDateTime} #{lastCostDateTime}
+            </if>
+        </where>
+    </select>
+
+    <insert id="insertBCustomer" parameterType="com.hewei.member.domain.BCustomer" useGeneratedKeys="true" keyProperty="id">
+        insert into b_customer
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="customerName != null and customerName != ''">customer_name,</if>
+            <if test="nickName != null">nick_name,</if>
+            <if test="phonenumber != null and phonenumber != ''">phonenumber,</if>
+            <if test="sex != null">sex,</if>
+            <if test="status != null">status,</if>
+            <if test="delFlag != null">del_flag,</if>
+            <if test="lastUseDate != null">last_use_date,</if>
+            <if test="createBy != null">create_by,</if>
+            <if test="createTime != null">create_time,</if>
+            <if test="updateBy != null">update_by,</if>
+            <if test="updateTime != null">update_time,</if>
+            <if test="remark != null">remark,</if>
+         </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="customerName != null and customerName != ''">#{customerName},</if>
+            <if test="nickName != null">#{nickName},</if>
+            <if test="phonenumber != null and phonenumber != ''">#{phonenumber},</if>
+            <if test="sex != null">#{sex},</if>
+            <if test="status != null">#{status},</if>
+            <if test="delFlag != null">#{delFlag},</if>
+            <if test="lastUseDate != null">#{lastUseDate},</if>
+            <if test="createBy != null">#{createBy},</if>
+            <if test="createTime != null">#{createTime},</if>
+            <if test="updateBy != null">#{updateBy},</if>
+            <if test="updateTime != null">#{updateTime},</if>
+            <if test="remark != null">#{remark},</if>
+         </trim>
+    </insert>
+
+    <update id="updateBCustomer" parameterType="com.hewei.member.domain.BCustomer">
+        update b_customer
+        <trim prefix="SET" suffixOverrides=",">
+            <if test="customerName != null and customerName != ''">customer_name = #{customerName},</if>
+            <if test="nickName != null">nick_name = #{nickName},</if>
+            <if test="phonenumber != null and phonenumber != ''">phonenumber = #{phonenumber},</if>
+            <if test="sex != null">sex = #{sex},</if>
+            <if test="status != null">status = #{status},</if>
+            <if test="delFlag != null">del_flag = #{delFlag},</if>
+            <if test="lastUseDate != null">last_use_date = #{lastUseDate},</if>
+            <if test="createBy != null">create_by = #{createBy},</if>
+            <if test="createTime != null">create_time = #{createTime},</if>
+            <if test="updateBy != null">update_by = #{updateBy},</if>
+            <if test="updateTime != null">update_time = #{updateTime},</if>
+            <if test="remark != null">remark = #{remark},</if>
+        </trim>
+        where id = #{id}
+    </update>
+
+    <delete id="deleteBCustomerById" parameterType="Long">
+        delete from b_customer where id = #{id}
+    </delete>
+
+    <delete id="deleteBCustomerByIds" parameterType="String">
+        delete from b_customer where id in 
+        <foreach item="id" collection="array" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+    </delete>
+</mapper>

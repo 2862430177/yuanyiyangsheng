@@ -55,8 +55,8 @@ public interface ISysConfigService
      * @param config 参数配置信息
      * @return 结果
      */
-    public int updateConfig(SysConfig config);
-
+    int updateConfig(SysConfig config);
+    int updateConfigByKey(SysConfig config);
     /**
      * 批量删除参数信息
      * 

@@ -1,0 +1,150 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.hewei.dailyservice.serviceflow.mapper.BServiceFlowMapper">
+    
+    <resultMap type="com.hewei.dailyservice.serviceflow.domain.BServiceFlow" id="BServiceFlowResult">
+        <result property="id"    column="id"    />
+        <result property="employeeId"    column="employee_id"    />
+        <result property="equipmentId"    column="equipment_id"    />
+        <result property="customerId"    column="customer_id"    />
+        <result property="memberCardId"    column="member_card_id"    />
+        <result property="settlementType"    column="settlement_type"    />
+        <result property="serviceCharge"    column="service_charge"    />
+        <result property="status"    column="status"    />
+        <result property="delFlag"    column="del_flag"    />
+        <result property="createBy"    column="create_by"    />
+        <result property="createTime"    column="create_time"    />
+        <result property="updateBy"    column="update_by"    />
+        <result property="updateTime"    column="update_time"    />
+        <result property="remark"    column="remark"    />
+    </resultMap>
+
+    <resultMap id="BServiceFlowBServiceFlowDetailResult" type="com.hewei.dailyservice.serviceflow.domain.BServiceFlow" extends="BServiceFlowResult">
+        <collection property="bServiceFlowDetailList" ofType="BServiceFlowDetail" column="{flow_id=id}" select="selectBServiceFlowDetailList" />
+    </resultMap>
+
+    <resultMap type="BServiceFlowDetail" id="BServiceFlowDetailResult">
+        <result property="id"    column="id"    />
+        <result property="flowId"    column="flow_id"    />
+        <result property="detailType"    column="detail_type"    />
+        <result property="detailPkId"    column="detail_pk_id"    />
+        <result property="detailName"    column="detail_name"    />
+        <result property="detailNum"    column="detail_num"    />
+        <result property="detailUnitPrice"    column="detail_unit_price"    />
+    </resultMap>
+
+    <sql id="selectBServiceFlowVo">
+        select id, employee_id, equipment_id, customer_id, member_card_id,settlement_type, service_charge, status, del_flag, create_by, create_time, update_by, update_time, remark from b_service_flow
+    </sql>
+
+    <select id="selectBServiceFlowList" parameterType="com.hewei.dailyservice.serviceflow.domain.BServiceFlow" resultMap="BServiceFlowResult">
+        <include refid="selectBServiceFlowVo"/>
+        <where>  
+            <if test="employeeId != null "> and employee_id = #{employeeId}</if>
+            <if test="equipmentId != null "> and equipment_id = #{equipmentId}</if>
+            <if test="customerId != null "> and customer_id = #{customerId}</if>
+            <if test="memberCardId != null "> and member_card_id = #{memberCardId}</if>
+            <if test="settlementType != null  and settlementType != ''"> and settlement_type = #{settlementType}</if>
+            <if test="serviceCharge != null "> and service_charge = #{serviceCharge}</if>
+            <if test="status != null  and status != ''"> and status = #{status}</if>
+            <if test="createTime != null"> and date_format(create_time,'%Y-%m-%d') = #{createTime,jdbcType=DATE}</if>
+        </where>
+        order by create_time desc
+    </select>
+    
+    <select id="selectBServiceFlowById" parameterType="Long" resultMap="BServiceFlowBServiceFlowDetailResult">
+        <include refid="selectBServiceFlowVo"/>
+        where id = #{id}
+    </select>
+
+    <select id="selectBServiceFlowDetailList" resultType="com.hewei.dailyservice.serviceflow.domain.BServiceFlowDetail" resultMap="BServiceFlowDetailResult">
+        select id, flow_id, detail_type, detail_pk_id, detail_name, detail_num, detail_unit_price
+        from b_service_flow_detail
+        where flow_id = #{flow_id}
+    </select>
+
+    <insert id="insertBServiceFlow" parameterType="com.hewei.dailyservice.serviceflow.domain.BServiceFlow" useGeneratedKeys="true" keyProperty="id">
+        insert into b_service_flow
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="employeeId != null">employee_id,</if>
+            <if test="equipmentId != null">equipment_id,</if>
+            <if test="customerId != null">customer_id,</if>
+            <if test="memberCardId != null">member_card_id,</if>
+            <if test="settlementType != null">settlement_type,</if>
+            <if test="serviceCharge != null">service_charge,</if>
+            <if test="status != null">status,</if>
+            <if test="delFlag != null">del_flag,</if>
+            <if test="createBy != null">create_by,</if>
+            <if test="createTime != null">create_time,</if>
+            <if test="updateBy != null">update_by,</if>
+            <if test="updateTime != null">update_time,</if>
+            <if test="remark != null">remark,</if>
+         </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="employeeId != null">#{employeeId},</if>
+            <if test="equipmentId != null">#{equipmentId},</if>
+            <if test="customerId != null">#{customerId},</if>
+            <if test="memberCardId != null">#{memberCardId},</if>
+            <if test="settlementType != null">#{settlementType},</if>
+            <if test="serviceCharge != null">#{serviceCharge},</if>
+            <if test="status != null">#{status},</if>
+            <if test="delFlag != null">#{delFlag},</if>
+            <if test="createBy != null">#{createBy},</if>
+            <if test="createTime != null">#{createTime},</if>
+            <if test="updateBy != null">#{updateBy},</if>
+            <if test="updateTime != null">#{updateTime},</if>
+            <if test="remark != null">#{remark},</if>
+         </trim>
+    </insert>
+
+    <update id="updateBServiceFlow" parameterType="com.hewei.dailyservice.serviceflow.domain.BServiceFlow">
+        update b_service_flow
+        <trim prefix="SET" suffixOverrides=",">
+            <if test="employeeId != null">employee_id = #{employeeId},</if>
+            <if test="equipmentId != null">equipment_id = #{equipmentId},</if>
+            <if test="customerId != null">customer_id = #{customerId},</if>
+            <if test="memberCardId != null">member_card_id = #{memberCardId},</if>
+            <if test="settlementType != null">settlement_type = #{settlementType},</if>
+            <if test="serviceCharge != null">service_charge = #{serviceCharge},</if>
+            <if test="status != null">status = #{status},</if>
+            <if test="delFlag != null">del_flag = #{delFlag},</if>
+            <if test="createBy != null">create_by = #{createBy},</if>
+            <if test="createTime != null">create_time = #{createTime},</if>
+            <if test="updateBy != null">update_by = #{updateBy},</if>
+            <if test="updateTime != null">update_time = #{updateTime},</if>
+            <if test="remark != null">remark = #{remark},</if>
+        </trim>
+        where id = #{id}
+    </update>
+
+    <delete id="deleteBServiceFlowById" parameterType="Long">
+        delete from b_service_flow where id = #{id}
+    </delete>
+
+    <delete id="deleteBServiceFlowByIds" parameterType="String">
+        delete from b_service_flow where id in 
+        <foreach item="id" collection="array" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+    </delete>
+    
+    <delete id="deleteBServiceFlowDetailByFlowIds" parameterType="String">
+        delete from b_service_flow_detail where flow_id in 
+        <foreach item="flowId" collection="array" open="(" separator="," close=")">
+            #{flowId}
+        </foreach>
+    </delete>
+
+    <delete id="deleteBServiceFlowDetailByFlowId" parameterType="Long">
+        delete from b_service_flow_detail where flow_id = #{flowId}
+    </delete>
+
+    <insert id="batchBServiceFlowDetail">
+        insert into b_service_flow_detail( id, flow_id, detail_type, detail_pk_id, detail_name, detail_num, detail_unit_price) values
+        <foreach item="item" index="index" collection="list" separator=",">
+            ( #{item.id}, #{item.flowId}, #{item.detailType}, #{item.detailPkId}, #{item.detailName}, #{item.detailNum}, #{item.detailUnitPrice})
+        </foreach>
+    </insert>
+</mapper>
